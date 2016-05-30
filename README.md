@@ -4,7 +4,7 @@ Blather is a speech recognizer that will run commands when a user speaks preset 
 
 ## Requirements
 
-(0.) Download and run Blather-Installer (it will install dependencies and clone this git and set up configuration)
+0. Download and run Blather-Installer (it will install dependencies and clone this git and set up configuration)
 1. pocketsphinx
 2. gstreamer-0.10 (and what ever plugin has pocket sphinx support)
 3. gstreamer-0.10 base plugins (required for alsa)
