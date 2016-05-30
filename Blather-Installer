@@ -51,8 +51,8 @@ get_blather(){
 
 conf(){
 startupscript=/home/$user/blather/blather.sh
-mkdir -p $configdir
-cp -R $builddir/config/ $configdir/
+# mkdir -p $configdir
+# cp -R $builddir/config/ $configdir/
 # cp $builddir/options.yaml.tmp $configdir/options.yaml
 
 # create a startup script
@@ -69,9 +69,9 @@ sleep .1
 #export VOICE="/usr/bin/festival --tts"
 export VOICE="/usr/bin/espeak"
 sleep .1
-export PLUGINS="/home/$user/.config/blather/plugins"
+export PLUGINS="/home/$user/blather/config/plugins"
 sleep .1
-export CONFIGDIR="/home/$user/.config/blather"
+export CONFIGDIR="/home/$user/blather/config"
 sleep .1
 export CLIP="/home/$user/.local/share/clipit/history"
 sleep .1

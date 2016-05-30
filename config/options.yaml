@@ -4,6 +4,6 @@ continuous: true
 history: 20
 microphone: null
 interface: g
-valid_sentence_command: /home/$(whoami)/.config/blather/plugins/valid_command.sh
+valid_sentence_command: /home/$(whoami)/blather/config/plugins/valid_command.sh
 invalid_sentence_command: null
 #pass_words: true # test first!

@@ -12,10 +12,10 @@ from optparse import OptionParser
 try:
 	import yaml
 except:
-	print "YAML is not supported. ~/.config/blather/options.yaml will not function"
+	print "YAML is not supported. ~/blather/config/options.yaml will not function"
 
 #where are the files?
-conf_dir = os.path.expanduser("~/.config/blather")
+conf_dir = os.path.expanduser("~/blather/config/")
 lang_dir = os.path.join(conf_dir, "language")
 command_file = os.path.join(conf_dir, "commands.conf")
 strings_file = os.path.join(conf_dir, "sentences.corpus")
@@ -249,4 +249,3 @@ if __name__ == "__main__":
 		print "time to quit"
 		main_loop.quit()
 		sys.exit()
-

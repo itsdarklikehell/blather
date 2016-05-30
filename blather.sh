@@ -10,9 +10,9 @@ sleep .1
 #export VOICE="/usr/bin/festival --tts"
 export VOICE="/usr/bin/espeak"
 sleep .1
-export PLUGINS="/home/rizzo/.config/blather/plugins"
+export PLUGINS="/home/rizzo/blather/config/plugins"
 sleep .1
-export CONFIGDIR="/home/rizzo/.config/blather"
+export CONFIGDIR="/home/rizzo/blather/config"
 sleep .1
 export CLIP="/home/rizzo/.local/share/clipit/history"
 sleep .1
@@ -42,4 +42,3 @@ sleep .3
 # and a history of 20 recent commands
 /home/rizzo/blather/./language_updater.sh
 python2 /home/rizzo/blather/Blather.py
-
