@@ -1,0 +1,15 @@
+      8 ps
+      8 start-teamserver
+      9 ifconfig
+      9 ./Start-teamserver.sh
+     10 blather
+     10 espeak
+     10 ls
+     12 echo
+     13 amixer
+     19 git
+     19 grep
+     24 exit
+     39 xdotool
+     61 cd
+    105 sudo

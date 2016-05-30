@@ -1,0 +1,125 @@
+#!/bin/bash -
+#====================================================================
+#
+#   DESCRIPTION: on Debian-based systems, installs dependencies for
+#   blather, gets source code for sphinx stuff, builds, installs
+#   program, config files, and so forth. USE AT YOUR OWN RISK!
+#   READ THE SCRIPT CAREFULLY AND DECIDE IF YOU WANT TO USE IT
+#
+#  REQUIREMENTS: debian-based system, sudo privileges
+#          BUGS: ---
+#         NOTES: ---
+#        AUTHOR: Jonathan Kulp ()
+#       CREATED: 07/09/2013 09:03:38 PM CDT
+#====================================================================
+
+user=$(whoami)
+builddir="/home/$user/blather"
+configdir="/home/$user/.config/blather"
+
+install_deps(){
+  buildtools="git build-essential gnome-common bison"
+  libs="python-pyside libgstreamer-plugins-base0.10-dev libgstreamer0.10-cil-dev libgstreamer0.10-dev python-gst0.10-dev rygel-gst-launch gstreamer0.10-plugins-good python-sphinx gstreamer0.10-tools python-gtk2 python-gtk2-dev"
+  packages="xvkbd xdotool espeak wmctrl elinks xclip curl"
+  sudo apt-get update
+  sudo apt-get install $buildtools $libs $packages
+}
+
+get_sphinx(){
+  version="0.8"
+  cd /home/$(whoami)
+  wget http://sourceforge.net/projects/cmusphinx/files/sphinxbase/$version/sphinxbase-$version.tar.gz
+  tar xvf sphinxbase-$version.tar.gz
+  cd sphinxbase-$version/
+  ./autogen.sh && make && sudo make install
+}
+
+get_pocketsphinx(){
+  version="0.8"
+  cd /home/$(whoami)
+  wget http://sourceforge.net/projects/cmusphinx/files/pocketsphinx/$version/pocketsphinx-$version.tar.gz
+  tar xvf pocketsphinx-$version.tar.gz
+  cd pocketsphinx-$version/
+  ./autogen.sh && make && sudo make install
+  sudo cp ./src/gst-plugin/.libs/libgstpocketsphinx.so /usr/local/lib/gstreamer-0.10/
+}
+
+get_blather(){
+  cd /home/$user
+  git clone https://github.com/itsdarklikehell/blather
+}
+
+conf(){
+startupscript=/home/$user/blather/blather.sh
+mkdir -p $configdir
+cp -R $builddir/config/ $configdir/
+# cp $builddir/options.yaml.tmp $configdir/options.yaml
+
+# create a startup script
+cat > $startupscript << EOFstartup
+#!/bin/bash
+
+# tell it where the Gstreamer libraries are located
+
+export GST_PLUGIN_PATH=/usr/local/lib/gstreamer-0.10
+sleep .1
+
+# set some shortcuts to use in the commands file
+
+#export VOICE="/usr/bin/festival --tts"
+export VOICE="/usr/bin/espeak"
+sleep .1
+export PLUGINS="/home/$user/.config/blather/plugins"
+sleep .1
+export CONFIGDIR="/home/$user/.config/blather"
+sleep .1
+export CLIP="/home/$user/.local/share/clipit/history"
+sleep .1
+# export KEYPRESS="xvkbd -xsendevent -secure -text"
+export KEYPRESS="xdotool key"
+sleep .1
+export KEYHOLD="xdotool keydown"
+sleep .1
+export KEYTYPE="xdotool type"
+sleep .1
+export MMOVE="xdotool mousemove"
+# XCOORD:YCOORD
+sleep .1
+export CLICK="xdotool click"
+# Generally, left = 1, middle = 2, right = 3, wheel up = 4, wheel down = 5
+sleep .1
+export BROWSER="firefox"
+sleep .1
+export CHBROWSER="google-chrome"
+sleep .1
+export EDITOR="atom"
+sleep .1
+export FM="thunar"
+sleep .3
+
+# start blather in continuous mode with the GTK GUI
+# and a history of 20 recent commands
+/home/$(whoami)/blather/./language_updater.sh
+python2 /home/$user/blather/Blather.py
+
+EOFstartup
+
+chmod +x $startupscript
+sudo ln -s $startupscript /usr/local/bin/blather
+}
+echo "installing dependencies" | espeak
+# install_deps
+echo "Done!" | espeak
+echo "installing sphinxbase" | espeak
+# get_sphinx
+echo "Done!" | espeak
+echo "installing pocketsphinx" | espeak
+# get_pocketsphinx
+echo "Done!" | espeak
+echo "installing Blather" | espeak
+# get_blather
+echo "Done!" | espeak
+echo "configuring blather" | espeak
+conf
+echo "Done!" | espeak
+exit 0
