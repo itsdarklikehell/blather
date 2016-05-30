@@ -108,16 +108,16 @@ chmod +x $startupscript
 sudo ln -s $startupscript /usr/local/bin/blather
 }
 echo "installing dependencies" | espeak
-# install_deps
+install_deps
 echo "Done!" | espeak
 echo "installing sphinxbase" | espeak
-# get_sphinx
+get_sphinx
 echo "Done!" | espeak
 echo "installing pocketsphinx" | espeak
-# get_pocketsphinx
+get_pocketsphinx
 echo "Done!" | espeak
 echo "installing Blather" | espeak
-# get_blather
+get_blather
 echo "Done!" | espeak
 echo "configuring blather" | espeak
 conf
