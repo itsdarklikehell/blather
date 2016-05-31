@@ -9,5 +9,4 @@ echo Going to sleep now!
 echo Going to sleep now! | espeak
 while true; do
 	amixer set Master 0% & xdotool key XF86AudioMute 
-  sleep 1
 done
