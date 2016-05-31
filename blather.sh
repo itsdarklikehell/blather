@@ -10,11 +10,11 @@ sleep .1
 #export VOICE="/usr/bin/festival --tts"
 export VOICE="/usr/bin/espeak"
 sleep .1
-export PLUGINS="/home/rizzo/blather/config/plugins"
+export PLUGINS="/home/$(whoami)/blather/config/plugins"
 sleep .1
-export CONFIGDIR="/home/rizzo/blather/config"
+export CONFIGDIR="/home/$(whoami)/blather/config"
 sleep .1
-export CLIP="/home/rizzo/.local/share/clipit/history"
+export CLIP="/home/$(whoami)/.local/share/clipit/history"
 sleep .1
 # export KEYPRESS="xvkbd -xsendevent -secure -text"
 export KEYPRESS="xdotool key"
@@ -40,5 +40,5 @@ sleep .3
 
 # start blather in continuous mode with the GTK GUI
 # and a history of 20 recent commands
-/home/rizzo/blather/./language_updater.sh
-python2 /home/rizzo/blather/Blather.py
+/home/$(whoami)/blather/./language_updater.sh
+python2 /home/$(whoami)/blather/Blather.py
