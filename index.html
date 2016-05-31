@@ -31,18 +31,22 @@
         <h1>
 <a id="blather" class="anchor" href="#blather" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Blather</h1>
 
-<p>Blather is a speech recognizer that will run commands when a user speaks preset sentences.</p>
+<p>Blather is a speech recognizer made by Jezra (Jonathan Kulp) that will run commands when a user speaks preset sentences.</p>
 
 <h2>
 <a id="requirements" class="anchor" href="#requirements" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Requirements</h2>
 
-<p>(0.) Download and run Blather-Installer (it will install dependencies and clone this git and set up configuration)
-1. pocketsphinx
-2. gstreamer-0.10 (and what ever plugin has pocket sphinx support)
-3. gstreamer-0.10 base plugins (required for alsa)
-4. pyside (only required for the Qt based UI)
-5. pygtk (only required for the Gtk based UI)
-6. pyyaml (only required for reading the options file)  </p>
+<p>Download and run Blather-Installer (it will install dependencies and clone this git and set up configuration and such)</p>
+
+<ol>
+<li>pocketsphinx</li>
+<li>gstreamer-0.10 (and what ever plugin has pocket sphinx support)</li>
+<li>gstreamer-0.10 base plugins (required for alsa)</li>
+<li>pyside (only required for the Qt based UI)</li>
+<li>pygtk (only required for the Gtk based UI)</li>
+<li>pyyaml (only required for reading the options file)<br>
+</li>
+</ol>
 
 <p><strong>Note:</strong> it may also be required to install <code>pocketsphinx-hmm-en-hub4wsj</code></p>
 
@@ -68,7 +72,7 @@
 <li>start talking</li>
 </ol>
 
-<p><strong>Note:</strong> to start Blather without needing to enter command line options all the time, copy options.yaml.tmp to ~/.config/blather/options.yaml and edit accordingly.</p>
+<p><strong>Note:</strong> to start Blather without needing to enter command line options all the time, copy options.yaml.tmp to ~/blather/config/options.yaml and edit accordingly.</p>
 
 <h3>
 <a id="bonus" class="anchor" href="#bonus" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Bonus</h3>
