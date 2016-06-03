@@ -11,14 +11,21 @@
 # ps auxf | sort -nr -k 3 | head -10 | espeak
 
 ## Get server cpu info ##
-echo "Cpu status" | $VOICE
-lscpu
-lscpu | $VOICE
+#echo "Cpu status" | $VOICE
+#lscpu
+#lscpu | $VOICE
 
 ## older system use /proc/cpuinfo ##
 ##less /proc/cpuinfo | espeak
 
 ## get GPU ram on desktop / laptop##
-echo "video memory is currently" | $VOICE
-grep -i --color memory /var/log/Xorg.0.log
-grep -i --color memory /var/log/Xorg.0.log | $VOICE
+#echo "video memory is currently" | $VOICE
+#grep -i --color memory /var/log/Xorg.0.log
+#grep -i --color memory /var/log/Xorg.0.log | $VOICE
+filename="status_report.txt"
+datadir="~/blather/config/data"
+monitor | $datadir/$filename
+#cat $datadir/$filename | espeak
+cat $datadir/$filename | $mon
+echo $datadir/$filename | notify-send "Status Report"
+notify-send -t 0 "`monitor`"
