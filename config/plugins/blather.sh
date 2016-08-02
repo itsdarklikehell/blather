@@ -21,6 +21,8 @@ export KEYPRESS="xdotool key"
 sleep .1
 export KEYHOLD="xdotool keydown"
 sleep .1
+export KEYREL="xdotool keyup"
+sleep .1
 export KEYTYPE="xdotool type"
 sleep .1
 export MMOVE="xdotool mousemove"
