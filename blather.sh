@@ -1,5 +1,5 @@
 #!/bin/bash
-
+jackd -d dummy & echo "starting jackd -d dummy"
 # tell it where the Gstreamer libraries are located
 
 export GST_PLUGIN_PATH=/usr/local/lib/gstreamer-0.10
@@ -10,11 +10,11 @@ sleep .1
 #export VOICE="/usr/bin/festival --tts"
 export VOICE="/usr/bin/espeak"
 sleep .1
-export PLUGINS="/home/$(whoami)/blather/config/plugins"
+export PLUGINS="/home/pi/blather/config/plugins"
 sleep .1
-export CONFIGDIR="/home/$(whoami)/blather/config"
+export CONFIGDIR="/home/pi/blather/config"
 sleep .1
-export CLIP="/home/$(whoami)/.local/share/clipit/history"
+export CLIP="/home/pi/.local/share/clipit/history"
 sleep .1
 # export KEYPRESS="xvkbd -xsendevent -secure -text"
 export KEYPRESS="xdotool key"
@@ -40,5 +40,6 @@ sleep .3
 
 # start blather in continuous mode with the GTK GUI
 # and a history of 20 recent commands
-/home/$(whoami)/blather/./language_updater.sh
-python2 /home/$(whoami)/blather/Blather.py
+/home/pi/blather/./language_updater.sh
+python /home/pi/blather/Blather.py -m 1
+
