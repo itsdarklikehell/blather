@@ -2,8 +2,8 @@
 #these options can be over-ridden by commandline arguments
 continuous: true
 history: 20
-microphone: null
-interface: g
-valid_sentence_command: /home/$(whoami)/blather/config/plugins/valid_command.sh
-invalid_sentence_command: null
+microphone: 1
+interface: null
+valid_sentence_command: /home/pi/blather/config/plugins/valid_command.sh
+invalid_sentence_command: /home/pi/blather/config/plugins/invalid_command.sh
 #pass_words: true # test first!
