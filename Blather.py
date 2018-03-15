@@ -34,7 +34,7 @@ class Blather:
 		from Recognizer import Recognizer
 		self.ui = None
 		self.options = {}
-		ui_continuous_listen = False
+		ui_continuous_listen = True
 		self.continuous_listen = False
 
 		self.commands = {}
