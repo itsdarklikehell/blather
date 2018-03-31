@@ -106,6 +106,8 @@ EOFstartup
 
 chmod +x $startupscript
 sudo ln -s $startupscript /usr/local/bin/blather
+sudo ln -s /home/$USER/blather/blather-gtk.sh /usr/local/bin/blather-gtk
+sudo ln -s /home/$USER/blather/blather-qt.sh /usr/local/bin/blather-qt
 }
 echo "installing dependencies" | espeak
 install_deps

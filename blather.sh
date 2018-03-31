@@ -11,11 +11,11 @@ sleep .1
 #export VOICE="/usr/bin/espeak"
 export VOICE="/usr/bin/flite"
 sleep .1
-export PLUGINS="/home/pi/blather/config/plugins"
+export PLUGINS="$HOME/blather/config/plugins"
 sleep .1
-export CONFIGDIR="/home/pi/blather/config"
+export CONFIGDIR="$HOME/blather/config"
 sleep .1
-export CLIP="/home/pi/.local/share/clipit/history"
+export CLIP="$HOME/.local/share/clipit/history"
 sleep .1
 # export KEYPRESS="xvkbd -xsendevent -secure -text"
 export KEYPRESS="xdotool key"
@@ -30,16 +30,17 @@ sleep .1
 export CLICK="xdotool click"
 # Generally, left = 1, middle = 2, right = 3, wheel up = 4, wheel down = 5
 sleep .1
-export BROWSER="firefox"
+export BROWSER="chromiun-browser"
 sleep .1
-export CHBROWSER="google-chrome"
+export CHBROWSER="chromium-browser"
 sleep .1
-export EDITOR="atom"
+export EDITOR="geany"
 sleep .1
-export FM="thunar"
+#export FM="thunar"
+export FM="pcmanfm"
 sleep .3
 
 # start blather in continuous mode with the GTK GUI
 # and a history of 20 recent commands
-bash /home/pi/blather/language_updater.sh
-python2 /home/pi/blather/Blather.py
+bash $HOME/blather/language_updater.sh
+python $HOME/blather/Blather.py

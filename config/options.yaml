@@ -3,7 +3,7 @@
 continuous: true
 history: 20
 microphone: 1
-interface: q
+#interface: q
 valid_sentence_command: /home/pi/blather/config/plugins/valid_command.sh
 invalid_sentence_command: /home/pi/blather/config/plugins/invalid_command.sh
 #pass_words: true # test first!

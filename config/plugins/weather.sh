@@ -6,7 +6,7 @@
 # You have to modify LINK variable to get information
 # for your city/zip.
 #
-
+weather | $VOICE
 
 CURL="/usr/bin/curl -s"
 LINK="https://weather.com/weather/hourbyhour/l/NLXX0012:1:NL"
