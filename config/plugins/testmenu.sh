@@ -105,7 +105,7 @@ fi
                 exit
             ;;
         esac
-        exitstatus1=$status1
+        export exitstatus1=$status1
     done
 else
     whiptail --title "Testing" --msgbox "You chose not to start." 8 78

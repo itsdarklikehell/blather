@@ -7,7 +7,7 @@ langdir=$blatherdir/language
 tempfile=$blatherdir/url.txt
 lmtoolurl=http://www.speech.cs.cmu.edu/cgi-bin/tools/lmtool/run
 
-cd $blatherdir
+cd $blatherdir || exit
 
 sed -f - $sourcefile > $sentences <<EOFcommands
   /^$/d

@@ -5,3 +5,4 @@ cat ~/blather/config/data/top_ten_commands.txt &
 espeak -f ~/blather/config/data/top_ten_commands.txt
 echo "press [ENTER] to exit . . ."
 read enterkey
+export enterkey

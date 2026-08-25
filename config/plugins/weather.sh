@@ -17,7 +17,7 @@ FOURHR=$(date +%I%M --date="3 hour" )
 
 GETHOUR() {
 TIME="$1"
-MINUTES=$(echo ${TIME} | sed -e 's/^..//')     # get minutes of given time
+export MINUTES=$(echo ${TIME} | sed -e 's/^..//')     # get minutes of given time
 HOURS=$(echo ${TIME} | sed 's/\(.*\)../\1/')    # get hrs of given time
 HALFHOUR=$(echo "${HOURS}30")
 if [ "${TIME}" -lt "${HALFHOUR}" ]; then

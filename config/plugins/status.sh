@@ -23,7 +23,7 @@
 #grep -i --color memory /var/log/Xorg.0.log
 #grep -i --color memory /var/log/Xorg.0.log | $VOICE
 filename="status_report.txt"
-datadir="~/blather/config/data"
+datadir="$HOME/blather/config/data"
 monitor | $datadir/$filename
 #cat $datadir/$filename | espeak
 cat $datadir/$filename | $mon
