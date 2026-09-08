@@ -1,57 +1,61 @@
-#This is part of Blather
+# This is part of Blather
 # -- this code is licensed GPLv3
-# Copyright 2013 Jezra
+# Copyright 2013 Jezra (original)
+# Ported to Python 3 / GStreamer 1.0
 
-import pygst
-pygst.require('0.10')
-import gst
 import os.path
-import gobject
-import sys
+import gi
+gi.require_version('Gst', '1.0')
+from gi.repository import Gst, GObject
 
-#define some global variables
-this_dir = os.path.dirname( os.path.abspath(__file__) )
+GObject.type_register(Gst.Pipeline)
 
 
-class Recognizer(gobject.GObject):
-	__gsignals__ = {
-		'finished' : (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_STRING,))
-	}
-	def __init__(self, language_file, dictionary_file, src = None):
-		gobject.GObject.__init__(self)
-		self.commands = {}
-		if src:
-			audio_src = 'alsasrc device="hw:%d,0"' % (src)
-		else:
-			audio_src = 'autoaudiosrc'
+class Recognizer(GObject.GObject):
+    __gsignals__ = {
+        'finished': (GObject.SignalFlags.RUN_LAST, None, (str,))
+    }
 
-		#build the pipeline
-		cmd = audio_src+' ! audioconvert ! audioresample ! vader name=vad ! pocketsphinx name=asr ! appsink sync=false'
-		try:
-			self.pipeline=gst.parse_launch( cmd )
-		except Exception, e:
-			print e.message
-			print "You may need to install gstreamer0.10-pocketsphinx"
-			raise e
+    def __init__(self, language_file, dictionary_file, src=None):
+        GObject.GObject.__init__(self)
+        self.commands = {}
+        if src:
+            audio_src = f'alsasrc device="hw:{src},0" ! audioconvert ! audioresample'
+        else:
+            audio_src = 'autoaudiosrc ! audioconvert ! audioresample'
 
-		#get the Auto Speech Recognition piece
-		asr=self.pipeline.get_by_name('asr')
-		asr.connect('result', self.result)
-		asr.set_property('lm', language_file)
-		asr.set_property('dict', dictionary_file)
-		asr.set_property('configured', True)
-		#get the Voice Activity DEtectoR
-		self.vad = self.pipeline.get_by_name('vad')
-		self.vad.set_property('auto-threshold',True)
+        # VAD + pocketsphinx pipeline
+        pipeline_str = (
+            f'{audio_src} ! vader name=vad auto-threshold=true '
+            f'! pocketsphinx name=asr lm={language_file} dict={dictionary_file} '
+            f'! fakesink sync=false'
+        )
 
-	def listen(self):
-		self.pipeline.set_state(gst.STATE_PLAYING)
+        self.pipeline = Gst.parse_launch(pipeline_str)
+        if not self.pipeline:
+            raise RuntimeError("Failed to create GStreamer pipeline")
 
-	def pause(self):
-		self.vad.set_property('silent', True)
-		self.pipeline.set_state(gst.STATE_PAUSED)
+        self.bus = self.pipeline.get_bus()
+        self.bus.add_signal_watch()
+        self.bus.connect("message", self._on_bus_message)
 
-	def result(self, asr, text, uttid):
-		#emit finished
-		self.emit("finished", text)
+        asr = self.pipeline.get_by_name('asr')
+        if asr:
+            asr.set_property('configured', True)
 
+    def _on_bus_message(self, bus, message):
+        if message.type == Gst.MessageType.ELEMENT:
+            s = message.get_structure()
+            if s and s.get_name() == 'pocketsphinx':
+                text = s.get_string('hypothesis')
+                if text and text.strip():
+                    self.emit("finished", text.strip())
+
+    def listen(self):
+        self.pipeline.set_state(Gst.State.PLAYING)
+
+    def pause(self):
+        self.pipeline.set_state(Gst.State.PAUSED)
+
+    def stop(self):
+        self.pipeline.set_state(Gst.State.NULL)

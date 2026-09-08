@@ -1,251 +1,205 @@
-#!/usr/bin/env python2
-
+#!/usr/bin/env python3
 # -- this code is licensed GPLv3
-# Copyright 2013 Jezra
+# Copyright 2013 Jezra (original Python 2 version)
+# Ported to Python 3 / GStreamer 1.0
 
 import sys
 import signal
-import gobject
 import os.path
 import subprocess
-from optparse import OptionParser
-try:
-	import yaml
-except:
-	print "YAML is not supported. ~/blather/config/options.yaml will not function"
+import argparse
 
-#where are the files?
-conf_dir = os.path.expanduser("~/blather/config/")
+import gi
+gi.require_version('Gst', '1.0')
+from gi.repository import Gst, GLib
+
+try:
+    import yaml
+except ImportError:
+    print("YAML is not supported. ~/blather/config/options.yaml will not function")
+
+# where are the files?
+conf_dir = os.path.expanduser("~/.config/blather/")
 lang_dir = os.path.join(conf_dir, "language")
 command_file = os.path.join(conf_dir, "commands.conf")
 strings_file = os.path.join(conf_dir, "sentences.corpus")
 history_file = os.path.join(conf_dir, "blather.history")
 opt_file = os.path.join(conf_dir, "options.yaml")
-lang_file = os.path.join(lang_dir,'lm')
-dic_file = os.path.join(lang_dir,'dic')
-#make the lang_dir if it doesn't exist
-if not os.path.exists(lang_dir):
-	os.makedirs(lang_dir)
+lang_file = os.path.join(lang_dir, 'lm')
+dic_file = os.path.join(lang_dir, 'dic')
+
+# make the lang dir if it doesn't exist
+os.makedirs(lang_dir, exist_ok=True)
+
 
 class Blather:
-	def __init__(self, opts):
+    def __init__(self, opts):
+        self.ui = None
+        self.options = {}
+        self.continuous_listen = False
+        self.commands = {}
 
-		#import the recognizer so Gst doesn't clobber our -h
-		from Recognizer import Recognizer
-		self.ui = None
-		self.options = {}
-		ui_continuous_listen = True
-		self.continuous_listen = False
+        # read the commands
+        self.read_commands()
 
-		self.commands = {}
+        # load the options file
+        self.load_options()
 
-		#read the commands
-		self.read_commands()
+        # merge the opts
+        for k, v in vars(opts).items():
+            if k not in self.options or opts.override:
+                self.options[k] = v
 
-		#load the options file
-		self.load_options()
+        if self.options.get('interface') is not None:
+            iface = self.options['interface']
+            if iface == 'q':
+                from QtUI import UI
+            elif iface in ('g', 'gt'):
+                from GtkUI import UI
+            else:
+                print("no GUI defined")
+                sys.exit(1)
 
-		#merge the opts
-		for k,v in opts.__dict__.items():
-			if (not k in self.options) or opts.override:
-				self.options[k] = v
+            self.ui = UI(opts, self.options.get('continuous', False))
+            self.ui.command.connect(self.process_command)
+            # load icons
+            icon = self.load_resource("icon.png")
+            if icon:
+                self.ui.set_icon_active_asset(icon)
+            icon_inactive = self.load_resource("icon_inactive.png")
+            if icon_inactive:
+                self.ui.set_icon_inactive_asset(icon_inactive)
 
-		if self.options['interface'] != None:
-			if self.options['interface'] == "q":
-				from QtUI import UI
-			elif self.options['interface'] == "g":
-				from GtkUI import UI
-			elif self.options['interface'] == "gt":
-				from GtkTrayUI import UI
-			else:
-				print "no GUI defined"
-				sys.exit()
+        if self.options.get('history'):
+            self.history = []
 
-			self.ui = UI(args, self.options['continuous'])
-			self.ui.connect("command", self.process_command)
-			#can we load the icon resource?
-			icon = self.load_resource("icon.png")
-			if icon:
-				self.ui.set_icon_active_asset(icon)
-			#can we load the icon_inactive resource?
-			icon_inactive = self.load_resource("icon_inactive.png")
-			if icon_inactive:
-				self.ui.set_icon_inactive_asset(icon_inactive)
+        # create the recognizer
+        try:
+            from Recognizer import Recognizer
+            self.recognizer = Recognizer(lang_file, dic_file, self.options.get('microphone'))
+            self.recognizer.connect('finished', self.recognizer_finished)
+        except Exception as e:
+            print(f"ERROR: Could not start recognizer: {e}")
+            sys.exit(1)
 
-		if self.options['history']:
-			self.history = []
+        print("Using Options:", self.options)
 
-		#create the recognizer
-		try:
-			self.recognizer = Recognizer(lang_file, dic_file, self.options['microphone'] )
-		except Exception, e:
-			#no recognizer? bummer
-			sys.exit()
+    def read_commands(self):
+        try:
+            with open(command_file) as f:
+                lines = f.readlines()
+        except FileNotFoundError:
+            print(f"WARNING: command file not found: {command_file}")
+            return
+        with open(strings_file, "w") as strings:
+            for line in lines:
+                line = line.strip()
+                if len(line) and line[0] != "#":
+                    key, value = line.split(":", 1)
+                    key = key.strip().lower()
+                    value = value.strip()
+                    self.commands[key] = value
+                    strings.write(key + "\n")
 
-		self.recognizer.connect('finished',self.recognizer_finished)
+    def load_options(self):
+        if 'yaml' not in sys.modules:
+            return
+        try:
+            with open(opt_file) as f:
+                text = f.read()
+                self.options = yaml.safe_load(text) or {}
+        except (FileNotFoundError, yaml.YAMLError):
+            pass
 
-		print "Using Options: ", self.options
+    def log_history(self, text):
+        if self.options.get('history'):
+            self.history.append(text)
+            if len(self.history) > self.options['history']:
+                self.history.pop(0)
+            with open(history_file, "w") as hfile:
+                for line in self.history:
+                    hfile.write(line + "\n")
 
-	def read_commands(self):
-		#read the.commands file
-		file_lines = open(command_file)
-		strings = open(strings_file, "w")
-		for line in file_lines:
-				print line
-				#trim the white spaces
-				line = line.strip()
-				#if the line has length and the first char isn't a hash
-				if len(line) and line[0]!="#":
-						#this is a parsible line
-						(key,value) = line.split(":",1)
-						print key, value
-						self.commands[key.strip().lower()] = value.strip()
-						strings.write( key.strip()+"\n")
-		#close the strings file
-		strings.close()
+    def run_command(self, cmd):
+        subprocess.run(cmd, shell=True, check=False)
 
-	def load_options(self):
-		#is there an opt file?
-		try:
-			opt_fh = open(opt_file)
-			text = opt_fh.read()
-			self.options = yaml.load(text)
-		except:
-			pass
+    def recognizer_finished(self, text):
+        t = text.lower()
+        if t in self.commands:
+            if self.options.get('valid_sentence_command'):
+                subprocess.run(self.options['valid_sentence_command'], shell=True, check=False)
+            cmd = self.commands[t]
+            if self.options.get('pass_words'):
+                cmd += " " + t
+            self.run_command(cmd)
+            self.log_history(text)
+        else:
+            if self.options.get('invalid_sentence_command'):
+                subprocess.run(self.options['invalid_sentence_command'], shell=True, check=False)
+            print(f"no matching command {t}")
 
+        if self.ui:
+            if not self.continuous_listen:
+                self.recognizer.pause()
+            self.ui.finished(t)
 
-	def log_history(self,text):
-		if self.options['history']:
-			self.history.append(text)
-			if len(self.history) > self.options['history']:
-				#pop off the first item
-				self.history.pop(0)
+    def run(self):
+        if self.ui:
+            self.ui.run()
+        else:
+            self.recognizer.listen()
+            self.main_loop = GLib.MainLoop()
+            try:
+                self.main_loop.run()
+            except KeyboardInterrupt:
+                pass
 
-			#open and truncate the blather history file
-			hfile = open(history_file, "w")
-			for line in self.history:
-				hfile.write( line+"\n")
-			#close the  file
-			hfile.close()
+    def process_command(self, command):
+        if command == "listen":
+            self.recognizer.listen()
+        elif command == "stop":
+            self.recognizer.pause()
+        elif command == "continuous_listen":
+            self.continuous_listen = True
+            self.recognizer.listen()
+        elif command == "continuous_stop":
+            self.continuous_listen = False
+            self.recognizer.pause()
+        elif command == "quit":
+            sys.exit(0)
 
-	# Print the cmd and then run the command
-	def run_command(self, cmd):
-		print cmd
-		subprocess.call(cmd, shell=True)
-
-	def recognizer_finished(self, recognizer, text):
-		t = text.lower()
-		#is there a matching command?
-		if self.commands.has_key( t ):
-			#run the valid_sentence_command if there is a valid sentence command
-			if self.options['valid_sentence_command']:
-				subprocess.call(self.options['valid_sentence_command'], shell=True)
-			cmd = self.commands[t]
-			#should we be passing words?
-			if self.options['pass_words']:
-				cmd+=" "+t
-				self.run_command(cmd)
-			else:
-				self.run_command(cmd)
-			self.log_history(text)
-		else:
-			#run the invalid_sentence_command if there is a valid sentence command
-			if self.options['invalid_sentence_command']:
-				subprocess.call(self.options['invalid_sentence_command'], shell=True)
-			print "no matching command %s" %(t)
-		#if there is a UI and we are not continuous listen
-		if self.ui:
-			if not self.continuous_listen:
-				#stop listening
-				self.recognizer.pause()
-			#let the UI know that there is a finish
-			self.ui.finished(t)
-
-	def run(self):
-		if self.ui:
-			self.ui.run()
-		else:
-			blather.recognizer.listen()
-
-	def quit(self):
-		sys.exit()
-
-	def process_command(self, UI, command):
-		print command
-		if command == "listen":
-			self.recognizer.listen()
-		elif command == "stop":
-			self.recognizer.pause()
-		elif command == "continuous_listen":
-			self.continuous_listen = True
-			self.recognizer.listen()
-		elif command == "continuous_stop":
-			self.continuous_listen = False
-			self.recognizer.pause()
-		elif command == "quit":
-			self.quit()
-
-	def load_resource(self,string):
-		local_data = os.path.join(os.path.dirname(__file__), 'data')
-		paths = ["/usr/share/blather/","/usr/local/share/blather", local_data]
-		for path in paths:
-			resource = os.path.join(path, string)
-			if os.path.exists( resource ):
-				return resource
-		#if we get this far, no resource was found
-		return False
+    def load_resource(self, name):
+        local_data = os.path.join(os.path.dirname(__file__), 'data')
+        paths = ["/usr/share/blather/", "/usr/local/share/blather", local_data]
+        for path in paths:
+            resource = os.path.join(path, name)
+            if os.path.exists(resource):
+                return resource
+        return False
 
 
 if __name__ == "__main__":
-	parser = OptionParser()
-	parser.add_option("-i", "--interface",  type="string", dest="interface",
-		action='store',
-		help="Interface to use (if any). 'q' for Qt, 'g' for GTK, 'gt' for GTK system tray icon")
+    parser = argparse.ArgumentParser(description="Blather - speech recognizer")
+    parser.add_argument("-i", "--interface", type=str, dest="interface",
+                        help="Interface to use (if any). 'q' for Qt, 'g' for GTK")
+    parser.add_argument("-c", "--continuous", action="store_true", dest="continuous",
+                        help="starts interface with 'continuous' listen enabled")
+    parser.add_argument("-p", "--pass-words", action="store_true", dest="pass_words",
+                        help="passes the recognized words as arguments to the shell command")
+    parser.add_argument("-o", "--override", action="store_true", dest="override",
+                        help="override config file with command line options")
+    parser.add_argument("-H", "--history", type=int, dest="history",
+                        help="number of commands to store in history file")
+    parser.add_argument("-m", "--microphone", type=int, dest="microphone", default=None,
+                        help="Audio input card to use (if other than system default)")
+    parser.add_argument("--valid-sentence-command", type=str, dest="valid_sentence_command",
+                        help="command to run when a valid sentence is detected")
+    parser.add_argument("--invalid-sentence-command", type=str, dest="invalid_sentence_command",
+                        help="command to run when an invalid sentence is detected")
 
-	parser.add_option("-c", "--continuous",
-		action="store_true", dest="continuous", default=False,
-		help="starts interface with 'continuous' listen enabled")
+    options = parser.parse_args()
 
-	parser.add_option("-p", "--pass-words",
-		action="store_true", dest="pass_words", default=False,
-		help="passes the recognized words as arguments to the shell command")
+    blather = Blather(options)
 
-	parser.add_option("-o", "--override",
-		action="store_true", dest="override", default=False,
-		help="override config file with command line options")
-
-	parser.add_option("-H", "--history", type="int",
-		action="store", dest="history",
-		help="number of commands to store in history file")
-
-	parser.add_option("-m", "--microphone", type="int",
-		action="store", dest="microphone", default=None,
-		help="Audio input card to use (if other than system default)")
-
-	parser.add_option("--valid-sentence-command",  type="string", dest="valid_sentence_command",
-		action='store',
-		help="command to run when a valid sentence is detected")
-
-	parser.add_option( "--invalid-sentence-command",  type="string", dest="invalid_sentence_command",
-		action='store',
-		help="command to run when an invalid sentence is detected")
-
-	(options, args) = parser.parse_args()
-	#make our blather object
-	blather = Blather(options)
-	#init gobject threads
-	gobject.threads_init()
-	#we want a main loop
-	main_loop = gobject.MainLoop()
-	#handle sigint
-	signal.signal(signal.SIGINT, signal.SIG_DFL)
-	#run the blather
-	blather.run()
-	#start the main loop
-
-	try:
-		main_loop.run()
-	except:
-		print "time to quit"
-		main_loop.quit()
-		sys.exit()
+    signal.signal(signal.SIGINT, signal.SIG_DFL)
+    blather.run()
