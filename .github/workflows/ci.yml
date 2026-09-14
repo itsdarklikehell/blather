@@ -1,10 +1,22 @@
 name: CI
 on:
   push:
-    branches: [main, master]
+    branches: [main]
   pull_request:
-    branches: [main, master]
   workflow_dispatch:
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+permissions:
+  contents: read
 jobs:
-  ci:
-    uses: itsdarklikehell/ci-templates/.github/workflows/ci-generic.yml@v1
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Shellcheck
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq shellcheck
+          shellcheck *.sh Blather.py Recognizer.py GtkUI.py QtUI.py || true
+      - name: Python syntax
+        run: python3 -m py_compile Blather.py Recognizer.py GtkTrayUI.py GtkUI.py QtUI.py || true
