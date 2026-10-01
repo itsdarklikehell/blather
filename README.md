@@ -3,6 +3,7 @@
 <img src="https://img.shields.io/github/stars/itsdarklikehell/blather?style=flat-square&color=blue" alt="Stars">
 <img src="https://img.shields.io/github/forks/itsdarklikehell/blather?style=flat-square&color=green" alt="Forks">
 <img src="https://img.shields.io/github/license/itsdarklikehell/blather?style=flat-square" alt="License">
+<img src="https://img.shields.io/github/actions/workflow/status/itsdarklikehell/blather/ci.yml?branch=main&label=CI&style=flat-square" alt="CI Status">
 
 Blather is a speech recognizer that will run commands when a user speaks preset sentences.
 
