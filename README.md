@@ -19,35 +19,63 @@ Blather is a speech recognizer that will run commands when a user speaks preset 
 
 ### Vereisten
 
-1. Download and run Blather-Installer (it will install dependencies and clone this git and set up configuration)
-2. pocketsphinx
-3. gstreamer-0.10 (and what ever plugin has pocket sphinx support)
-4. gstreamer-0.10 base plugins (required for alsa)
-5. pyside (only required for the Qt based UI)
-6. pygtk (only required for the Gtk based UI)
-7. pyyaml (only required for reading the config file)
+1. pocketsphinx
+2. gstreamer-1.0 (and whatever plugin has pocketsphinx support)
+3. gstreamer-1.0 base plugins (required for alsa)
+4. python3-gi (only required for the Gtk based UI)
+5. pyside6 (only required for the Qt based UI)
+6. python3-yaml (only required for reading the config file)
+7. xdotool, wmctrl, xclip (for desktop automation commands)
 
 ### Installatie
 
 ```bash
+# Debian/Ubuntu
+sudo apt-get install pocketsphinx python3-yaml python3-gi python3-gi-cairo \
+  gir1.2-gtk-3.0 xdotool wmctrl xclip espeak
+
 git clone https://github.com/itsdarklikehell/blather.git
 cd blather
-# Run the installer
-./install.sh
 ```
 
 ## Gebruik
 
 ```bash
-# Start Blather
-python blather.py
+# Start Blather (headless, continuous listen)
+python3 Blather.py
 
-# Configure voice commands in config.yaml
-# Example:
-# commands:
-#   "turn on lights": "light on"
-#   "turn off lights": "light off"
+# Start met GTK UI
+python3 Blather.py -i g
+
+# Start met Qt UI
+python3 Blather.py -i q
+
+# Start met continuous listen
+python3 Blather.py -c
+
+# Microfoon selecteren (nummer uit `arecord -l`)
+python3 Blather.py -m 1
 ```
+
+### Configuratie
+
+- `config/commands.conf` — spraakcommando's (KEY:value formaat)
+- `config/options.yaml` — opties (continuous, history, microphone, interface)
+- `config/language/` — dictionary (.dic) en language model (.lm)
+- `config/data/` — tekstbestanden voor voice responses
+- `config/plugins/` — shell plugins voor custom acties
+
+### Commando's
+
+Commando's worden gedefinieerd in `config/commands.conf`:
+
+```
+# Wat je zegt: uit te voeren commando
+HELLO: echo "Hello World" | espeak
+OPEN FIREFOX: firefox &
+```
+
+Gebruik `$VOICE`, `$KEYPRESS`, `$KEYTYPE`, `$CLICK`, `$BROWSER` etc. voor desktop automatie.
 
 ## Bijdragers
 

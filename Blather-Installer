@@ -106,7 +106,7 @@ sleep .3
 # start blather in continuous mode with the GTK GUI
 # and a history of 20 recent commands
 $HOME/blather/./language_updater.sh
-python2 $HOME/blather/Blather.py
+python3 $HOME/blather/Blather.py
 
 EOFstartup
 
