@@ -1,24 +1,35 @@
-# Contributing
+# Contributing to Blather
 
-Bedankt voor je interesse om bij te dragen aan dit project!
+Bedankt voor je interesse om bij te dragen!
 
 ## Hoe te bijdragen
 
 1. Fork de repository
 2. Maak een feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit je wijzigingen (`git commit -m 'Add some amazing feature'`)
-4. Push naar de branch (`git push origin feature/amazing-feature`)
-5. Open een Pull Request
+3. Maak je wijzigingen
+4. Test lokaal:
+   ```bash
+   shellcheck *.sh config/plugins/*.sh
+   python3 -m py_compile *.py
+   ```
+5. Commit je wijzigingen (`git commit -m 'Add amazing feature'`)
+6. Push naar de branch (`git push origin feature/amazing-feature`)
+7. Open een Pull Request
 
 ## Code standaarden
 
-- Volg de bestaande code stijl
-- Voeg tests toe voor nieuwe functionaliteit
-- Update de documentatie waar nodig
+### Shell scripts
+- Gebruik `set -euo pipefail`
+- Volg [ShellCheck](https://www.shellcheck.net/) richtlijnen
+- Gebruik `#!/bin/bash` shebang
 
-## Rapporteren van bugs
+### Python
+- Volg PEP 8
+- Gebruik type hints waar mogelijk
+- Voeg docstrings toe aan nieuwe functies
 
-Gebruik het issue template om bugs te rapporteren. Voeg zo veel mogelijk informatie toe:
-- Stappen om te reproduceren
-- Verwacht vs. werkelijk gedrag
-- Screenshots (indien van toepassing)
+## Pull Requests
+
+- Beschrijf wat je PR doet en waarom
+- Referentie gerelateerde issues
+- Houd PRs gefocust op één wijziging

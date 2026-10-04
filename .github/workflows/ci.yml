@@ -1,8 +1,9 @@
 name: CI
 on:
   push:
-    branches: [master]
+    branches: ["main", "master"]
   pull_request:
+    branches: ["main", "master"]
   workflow_dispatch:
 concurrency:
   group: ci-${{ github.ref }}
@@ -10,13 +11,5 @@ concurrency:
 permissions:
   contents: read
 jobs:
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-      - name: Shellcheck
-        run: |
-          sudo apt-get update -qq && sudo apt-get install -y -qq shellcheck
-          shellcheck *.sh Blather.py Recognizer.py GtkUI.py QtUI.py || true
-      - name: Python syntax
-        run: python3 -m py_compile Blather.py Recognizer.py GtkTrayUI.py GtkUI.py QtUI.py || true
+  ci:
+    uses: itsdarklikehell/ci-templates/.github/workflows/ci-python.yml@v1

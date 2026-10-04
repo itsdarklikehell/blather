@@ -1,49 +1,46 @@
 #!/bin/bash
+# Blather launcher — start Blather met de juiste omgeving.
+# Detecteert automatisch de installatiepad (repo, ~/blather, of /usr/local).
 
-# tell it where the Gstreamer libraries are located
+set -euo pipefail
 
-export GST_PLUGIN_PATH=/usr/local/lib/gstreamer-0.10
-sleep .1
+# Bepaal het blather-directory: huidige map, ~/blather, of /usr/local
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [ -f "$SCRIPT_DIR/Blather.py" ]; then
+    BLATHER_DIR="$SCRIPT_DIR"
+elif [ -f "$HOME/blather/Blather.py" ]; then
+    BLATHER_DIR="$HOME/blather"
+elif [ -f "/usr/local/blather/Blather.py" ]; then
+    BLATHER_DIR="/usr/local/blather"
+else
+    echo "ERROR: Blather.py not found in $SCRIPT_DIR, ~/blather, or /usr/local/blather" >&2
+    exit 1
+fi
 
-# set some shortcuts to use in the commands file
+# GStreamer 1.x paden (0.10 is verouderd)
+export GST_PLUGIN_PATH="${GST_PLUGIN_PATH:-/usr/lib/gstreamer-1.0}"
 
-#export VOICE="/usr/bin/festival --tts"
-export VOICE="/usr/bin/flite"
-#export VOICE="/usr/bin/espeak"
-sleep .1
-export PLUGINS="/home/$USER/blather/config/plugins"
-sleep .1
-export CONFIGDIR="/home/$USER/blather/config"
-sleep .1
-export CLIP="/home/$USER/.local/share/clipit/history"
-sleep .1
-# export KEYPRESS="xvkbd -xsendevent -secure -text"
-export KEYPRESS="xdotool key"
-sleep .1
-export KEYHOLD="xdotool keydown"
-sleep .1
-export KEYTYPE="xdotool type"
-sleep .1
-export MMOVE="xdotool mousemove"
-# XCOORD:YCOORD
-sleep .1
-export CLICK="xdotool click"
-# Generally, left = 1, middle = 2, right = 3, wheel up = 4, wheel down = 5
-sleep .1
-export BROWSER="firefox"
-sleep .1
-export CHBROWSER="google-chrome"
-sleep .1
-export CRMBROWSER="chromium-browser"
-sleep .1
-export EDITOR="geany"
-#export EDITOR="atom"
-sleep .1
-export FM="pcmanfm"
-#export FM="thunar"
-sleep .3
+# Standaard TTS stem (overschrijfbaar via VOICE env var)
+export VOICE="${VOICE:-/usr/bin/flite}"
 
-# start blather in continuous mode with the GTK GUI
-# and a history of 20 recent commands
-/home/"$USER"/blather/./language_updater.sh
-python3 /home/"$USER"/blather/Blather.py
+# Config- en pluginpaden
+export PLUGINS="${PLUGINS:-$BLATHER_DIR/config/plugins}"
+export CONFIGDIR="${CONFIGDIR:-$BLATHER_DIR/config}"
+export CLIP="${CLIP:-$HOME/.local/share/clipit/history}"
+
+# X11/Xdotool shortcuts
+export KEYPRESS="${KEYPRESS:-xdotool key}"
+export KEYHOLD="${KEYHOLD:-xdotool keydown}"
+export KEYTYPE="${KEYTYPE:-xdotool type}"
+export MMOVE="${MMOVE:-xdotool mousemove}"
+export CLICK="${CLICK:-xdotool click}"
+
+# Applicaties
+export BROWSER="${BROWSER:-firefox}"
+export CHBROWSER="${CHBROWSER:-google-chrome}"
+export CRMBROWSER="${CRMBROWSER:-chromium-browser}"
+export EDITOR="${EDITOR:-geany}"
+export FM="${FM:-pcmanfm}"
+
+echo "Starting Blather from $BLATHER_DIR..."
+exec python3 "$BLATHER_DIR/Blather.py" "$@"

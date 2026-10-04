@@ -6,6 +6,7 @@
 import sys
 import signal
 import os.path
+import shlex
 import subprocess
 import argparse
 
@@ -121,13 +122,31 @@ class Blather:
                     hfile.write(line + "\n")
 
     def run_command(self, cmd):
-        subprocess.run(cmd, shell=True, check=False)
+        """Voer shell-commando uit zonder shell=True (veilig tegen injection)."""
+        try:
+            args = shlex.split(cmd)
+        except ValueError as e:
+            print(f"ERROR: invalid command syntax: {e}")
+            return
+        if not args:
+            return
+        subprocess.run(args, shell=False, check=False)
+
+    def _run_option_command(self, cmd):
+        """Voer een commando uit vanuit options zonder shell=True."""
+        try:
+            args = shlex.split(cmd)
+        except ValueError as e:
+            print(f"ERROR: invalid command syntax: {e}")
+            return
+        if args:
+            subprocess.run(args, shell=False, check=False)
 
     def recognizer_finished(self, text):
         t = text.lower()
         if t in self.commands:
             if self.options.get('valid_sentence_command'):
-                subprocess.run(self.options['valid_sentence_command'], shell=True, check=False)
+                self._run_option_command(self.options['valid_sentence_command'])
             cmd = self.commands[t]
             if self.options.get('pass_words'):
                 cmd += " " + t
@@ -135,7 +154,7 @@ class Blather:
             self.log_history(text)
         else:
             if self.options.get('invalid_sentence_command'):
-                subprocess.run(self.options['invalid_sentence_command'], shell=True, check=False)
+                self._run_option_command(self.options['invalid_sentence_command'])
             print(f"no matching command {t}")
 
         if self.ui:
