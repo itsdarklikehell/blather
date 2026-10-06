@@ -73,7 +73,7 @@ desktop.ini
 .Trashes
 ehthumbs.db
 Thumbs.db
-.~
+*~
 *.bak
 *.old
 *.swp
@@ -84,4 +84,36 @@ Thumbs.db
 ################
 *.pyo
 *.pyc
+__pycache__/
+*.egg-info/
+.eggs/
+build/
+dist/
+.tox/
+.nox/
+.coverage
+.coverage.*
+htmlcov/
+.pytest_cache/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Virtual environments #
+########################
+venv/
+.venv/
+env/
+ENV/
+
+# IDEs #
+########
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Gource #
+#########
 gource/*.ppm

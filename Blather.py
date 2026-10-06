@@ -3,12 +3,13 @@
 # Copyright 2013 Jezra (original Python 2 version)
 # Ported to Python 3 / GStreamer 1.0
 
-import sys
 import signal
 import os.path
 import shlex
 import subprocess
 import argparse
+import sys
+from typing import Any, Dict, List, Optional
 
 import gi
 gi.require_version('Gst', '1.0')
@@ -34,11 +35,14 @@ os.makedirs(lang_dir, exist_ok=True)
 
 
 class Blather:
-    def __init__(self, opts):
-        self.ui = None
-        self.options = {}
-        self.continuous_listen = False
-        self.commands = {}
+    def __init__(self, opts: argparse.Namespace) -> None:
+        self.ui: Any = None
+        self.options: Dict[str, Any] = {}
+        self.continuous_listen: bool = False
+        self.commands: Dict[str, str] = {}
+        self.history: List[str] = []
+        self.recognizer: Any = None
+        self.main_loop: Any = None
 
         # read the commands
         self.read_commands()
@@ -85,7 +89,7 @@ class Blather:
 
         print("Using Options:", self.options)
 
-    def read_commands(self):
+    def read_commands(self) -> None:
         try:
             with open(command_file) as f:
                 lines = f.readlines()
@@ -102,7 +106,7 @@ class Blather:
                     self.commands[key] = value
                     strings.write(key + "\n")
 
-    def load_options(self):
+    def load_options(self) -> None:
         if 'yaml' not in sys.modules:
             return
         try:
@@ -112,7 +116,7 @@ class Blather:
         except (FileNotFoundError, yaml.YAMLError):
             pass
 
-    def log_history(self, text):
+    def log_history(self, text: str) -> None:
         if self.options.get('history'):
             self.history.append(text)
             if len(self.history) > self.options['history']:
@@ -121,7 +125,7 @@ class Blather:
                 for line in self.history:
                     hfile.write(line + "\n")
 
-    def run_command(self, cmd):
+    def run_command(self, cmd: str) -> None:
         """Voer shell-commando uit zonder shell=True (veilig tegen injection)."""
         try:
             args = shlex.split(cmd)
@@ -132,7 +136,7 @@ class Blather:
             return
         subprocess.run(args, shell=False, check=False)
 
-    def _run_option_command(self, cmd):
+    def _run_option_command(self, cmd: str) -> None:
         """Voer een commando uit vanuit options zonder shell=True."""
         try:
             args = shlex.split(cmd)
@@ -142,7 +146,7 @@ class Blather:
         if args:
             subprocess.run(args, shell=False, check=False)
 
-    def recognizer_finished(self, text):
+    def recognizer_finished(self, text: str) -> None:
         t = text.lower()
         if t in self.commands:
             if self.options.get('valid_sentence_command'):
@@ -162,7 +166,7 @@ class Blather:
                 self.recognizer.pause()
             self.ui.finished(t)
 
-    def run(self):
+    def run(self) -> None:
         if self.ui:
             self.ui.run()
         else:
@@ -173,7 +177,7 @@ class Blather:
             except KeyboardInterrupt:
                 pass
 
-    def process_command(self, command):
+    def process_command(self, command: str) -> None:
         if command == "listen":
             self.recognizer.listen()
         elif command == "stop":
@@ -187,17 +191,17 @@ class Blather:
         elif command == "quit":
             sys.exit(0)
 
-    def load_resource(self, name):
+    def load_resource(self, name: str) -> Optional[str]:
         local_data = os.path.join(os.path.dirname(__file__), 'data')
         paths = ["/usr/share/blather/", "/usr/local/share/blather", local_data]
         for path in paths:
             resource = os.path.join(path, name)
             if os.path.exists(resource):
                 return resource
-        return False
+        return None
 
 
-if __name__ == "__main__":
+def main() -> None:
     parser = argparse.ArgumentParser(description="Blather - speech recognizer")
     parser.add_argument("-i", "--interface", type=str, dest="interface",
                         help="Interface to use (if any). 'q' for Qt, 'g' for GTK")
@@ -222,3 +226,7 @@ if __name__ == "__main__":
 
     signal.signal(signal.SIGINT, signal.SIG_DFL)
     blather.run()
+
+
+if __name__ == "__main__":
+    main()

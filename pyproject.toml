@@ -1,0 +1,69 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "blather"
+version = "1.0.0"
+description = "Speech recognition with a GUI interface, using GStreamer and pocketsphinx"
+readme = "README.md"
+license = {text = "GPL-3.0"}
+authors = [
+    {name = "Jezra", email = "jezra@example.com"}
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Multimedia :: Sound/Audio :: Speech",
+]
+requires-python = ">=3.9"
+dependencies = [
+    "pocketsphinx>=0.1.15",
+    "PyYAML>=6.0",
+    "PyGObject>=3.42.0",
+]
+
+[project.optional-dependencies]
+qt = ["PySide6>=6.0"]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "flake8>=6.0",
+    "black>=23.0",
+    "isort>=5.0",
+    "mypy>=1.0",
+    "bandit>=1.7",
+    "safety>=2.0",
+]
+
+[project.scripts]
+blather = "Blather:main"
+
+[tool.setuptools]
+py-modules = ["Blather", "GtkUI", "GtkTrayUI", "QtUI", "Recognizer"]
+
+[tool.black]
+line-length = 127
+target-version = ['py39']
+
+[tool.isort]
+profile = "black"
+line_length = 127
+
+[tool.mypy]
+python_version = "3.9"
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
