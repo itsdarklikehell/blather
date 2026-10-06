@@ -1,0 +1,3 @@
+#!/usr/bin/env python3
+"""Bandit security configuration."""
+# Bandit config in pyproject.toml or setup.cfg

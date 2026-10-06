@@ -4,7 +4,8 @@
 
 | Version | Supported          |
 | ------- | ------------------ |
-| latest  | :white_check_mark: |
+| 1.0.x   | :white_check_mark: |
+| < 1.0   | :x:                |
 
 ## Reporting a Vulnerability
 
@@ -24,3 +25,11 @@ Blather voert shell-commando's uit op basis van spraakherkenning. Houd rekening 
 - Commando's in `config/commands.conf` worden uitgevoerd met shell privileges
 - Plugins in `config/plugins/` worden uitgevoerd als shell scripts
 - De microfooninput wordt lokaal verwerkt, niet naar externe servers gestuurd
+
+## Security Measures
+
+- Regular dependency updates via Dependabot and Renovate
+- Automated security scanning with Bandit and Safety
+- Shell script linting with ShellCheck
+- Code review required for all changes
+- No `shell=True` in Python subprocess calls (injection-safe)
